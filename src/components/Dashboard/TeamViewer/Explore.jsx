@@ -6,19 +6,24 @@ import PropTypes from "prop-types";
 import TeamLoading from "../TeamLoading";
 
 import RenderRow from "./RenderRow";
+import ExploreSearchBox from "./ExploreSearchBox";
 
 function Explore(props) {
     const [matches, setMatches] = useState({});
+    const [searchMatches, setSearchMatches] = useState([]);
     const [originalTeamId, setOriginalTeam] = useState({});
     const [page, setPage] = React.useState(1);
     const [allTeams, setAllTeams] = useState({});
     const [loading, setLoading] = useState("Loading your matches...");
+    const [searchText, setSearchText] = useState("");
+
     useEffect(() => {
         props.profile.getTeamUser().then((success) => {
             const team_id = success.response.team_id;
             setOriginalTeam(success.response.team_id);
             props.profile.matches(team_id).then((success) => {
                 setMatches(success.response);
+                setSearchMatches(success.response.matches);
                 props.profile.getAllTeams(0, 4).then((success) => {
                     setAllTeams(success.response);
                     setLoading(false);
@@ -26,6 +31,27 @@ function Explore(props) {
             });
         });
     }, []);
+
+    /*
+    * Search Box Functionality
+    * On each letter change, setSearchMatches with filter
+    * Based on initial page load matches
+    */
+    useEffect(() => {
+        try {
+            const checkMatch = (match) => {
+                const lowerMatch = match.name.toLowerCase();
+                const upperMatch = match.name.toUpperCase();
+                if (lowerMatch.includes(searchText.toLowerCase()))
+                    return lowerMatch.includes(searchText.toLowerCase());
+                else if (upperMatch.includes(searchText.toUpperCase()))
+                    return upperMatch.includes(searchText.toUpperCase());
+            };
+            setSearchMatches(matches.matches.filter(checkMatch));
+        } catch (error) {
+            console.error(error);
+        }
+    }, [searchText]);
 
     const onInvite = async (id) => {
         // let all_teams = await props.profile.getAllTeams(((page - 1) * 4), 4);
@@ -52,7 +78,12 @@ function Explore(props) {
             container
             direction="column"
             justify="center"
-            alignItems="center">
+            alignItems="center"
+            style={{marginTop: "2em"}}>
+            {/* <ExploreSearch options={matches}
+                setSearchText={setSearchText}
+            /> */}
+            <ExploreSearchBox setSearchText={setSearchText} />
             <Typography variant="h5"
                 style={{ marginTop: "2em" }}>
                 Matches
@@ -61,8 +92,8 @@ function Explore(props) {
                 style={{ maxHeight: "300px", width: "600px", overflow: "auto" }}
                 className="no-scrollbars no-style-type"
             >
-                {matches.matches && matches.matches.length > 0 ? (
-                    matches.matches.map((invitingTeamId, i) => (
+                {searchMatches && searchMatches.length > 0 ? (
+                    searchMatches.map((invitingTeamId, i) => (
                         <RenderRow
                             index={invitingTeamId}
                             key={invitingTeamId+i}
@@ -76,6 +107,13 @@ function Explore(props) {
                     <Typography variant="subtitle1">No Matches Yet</Typography>
                 )}
             </List>
+            {/* <Pagination
+                count={Math.ceil(allTeams.total_teams / 4)}
+                variant="outlined"
+                page={page}
+                onChange={handlePagination}
+                shape="rounded"
+            /> */}
             <Typography variant="h5">All Teams</Typography>
             <List
                 style={{ maxHeight: "300px", width: "600px", overflow: "auto" }}

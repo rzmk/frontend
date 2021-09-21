@@ -63,9 +63,18 @@ function Explore(props) {
     }, [searchText]);
 
     // Runs on search box change
+    // Sets new search page count based on number of total matches
     useEffect(() => {
         setSearchPageCount(Math.ceil(totalSearchMatches.length / 4));
     }, [totalSearchMatches]);
+
+    // Runs on search box change
+    // Checks if user searches while past total search matches page count
+    useEffect(() => {
+        if (searchPage > searchPageCount) {
+            searchPagination(null, 1);
+        }
+    }, [searchPageCount]);
 
     const onInvite = async (id) => {
         // let all_teams = await props.profile.getAllTeams(((page - 1) * 4), 4);
@@ -81,7 +90,7 @@ function Explore(props) {
 
     const searchPagination = async (event, value) => {
         setSearchPage(value);
-        let searchView = matches.matches.slice(((value - 1) * 4), value * 4);
+        let searchView = totalSearchMatches.slice(((value - 1) * 4), value * 4);
         setSearchMatches(searchView);
     };
 

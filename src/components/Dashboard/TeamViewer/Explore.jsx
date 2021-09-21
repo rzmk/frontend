@@ -11,8 +11,11 @@ import ExploreSearchBox from "./ExploreSearchBox";
 function Explore(props) {
     const [matches, setMatches] = useState({});
     const [searchMatches, setSearchMatches] = useState([]);
+    const [totalSearchMatches, setTotalSearchMatches] = useState([]);
     const [originalTeamId, setOriginalTeam] = useState({});
     const [page, setPage] = React.useState(1);
+    const [searchPage, setSearchPage] = React.useState(1);
+    const [searchPageCount, setSearchPageCount] = useState(1);
     const [allTeams, setAllTeams] = useState({});
     const [loading, setLoading] = useState("Loading your matches...");
     const [searchText, setSearchText] = useState("");
@@ -23,7 +26,10 @@ function Explore(props) {
             setOriginalTeam(success.response.team_id);
             props.profile.matches(team_id).then((success) => {
                 setMatches(success.response);
-                setSearchMatches(success.response.matches);
+                setSearchMatches(success.response.matches.slice(0, 4));
+                setTotalSearchMatches(success.response.matches);
+                console.log(success.response.matches.length);
+                setSearchPageCount(Math.ceil(success.response.matches.length / 4));
                 props.profile.getAllTeams(0, 4).then((success) => {
                     setAllTeams(success.response);
                     setLoading(false);
@@ -34,8 +40,10 @@ function Explore(props) {
 
     /*
     * Search Box Functionality
-    * On each letter change, setSearchMatches with filter
-    * Based on initial page load matches
+    *
+    * On each letter change
+    * setSearchMatches: .includes() filter using checkMatch for case-insensitive input and slices to four results for pagination
+    * setTotalSearchMatches: same as setSearchMatches but no slicing, used for searchPageCount
     */
     useEffect(() => {
         try {
@@ -47,11 +55,17 @@ function Explore(props) {
                 else if (upperMatch.includes(searchText.toUpperCase()))
                     return upperMatch.includes(searchText.toUpperCase());
             };
-            setSearchMatches(matches.matches.filter(checkMatch));
+            setSearchMatches(matches.matches.filter(checkMatch).slice(((searchPage - 1) * 4), searchPage * 4));
+            setTotalSearchMatches(matches.matches.filter(checkMatch));
         } catch (error) {
             console.error(error);
         }
     }, [searchText]);
+
+    // Runs on search box change
+    useEffect(() => {
+        setSearchPageCount(Math.ceil(totalSearchMatches.length / 4));
+    }, [totalSearchMatches]);
 
     const onInvite = async (id) => {
         // let all_teams = await props.profile.getAllTeams(((page - 1) * 4), 4);
@@ -63,6 +77,12 @@ function Explore(props) {
             ...prevState,
             matches: prevState.matches.filter(el => el !== id)
         }));
+    };
+
+    const searchPagination = async (event, value) => {
+        setSearchPage(value);
+        let searchView = matches.matches.slice(((value - 1) * 4), value * 4);
+        setSearchMatches(searchView);
     };
 
     const handlePagination = async (event, value) => {
@@ -80,9 +100,6 @@ function Explore(props) {
             justify="center"
             alignItems="center"
             style={{marginTop: "2em"}}>
-            {/* <ExploreSearch options={matches}
-                setSearchText={setSearchText}
-            /> */}
             <ExploreSearchBox setSearchText={setSearchText} />
             <Typography variant="h5"
                 style={{ marginTop: "2em" }}>
@@ -107,13 +124,13 @@ function Explore(props) {
                     <Typography variant="subtitle1">No Matches Yet</Typography>
                 )}
             </List>
-            {/* <Pagination
-                count={Math.ceil(allTeams.total_teams / 4)}
+            <Pagination
+                count={searchPageCount}
                 variant="outlined"
-                page={page}
-                onChange={handlePagination}
+                page={searchPage}
+                onChange={searchPagination}
                 shape="rounded"
-            /> */}
+            />
             <Typography variant="h5">All Teams</Typography>
             <List
                 style={{ maxHeight: "300px", width: "600px", overflow: "auto" }}

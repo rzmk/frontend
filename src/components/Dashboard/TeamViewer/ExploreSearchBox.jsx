@@ -17,7 +17,7 @@ function ExploreSearchSimple(props) {
             }}
         >
             <TextField id="outlined-basic"
-                label="Search for a team"
+                label="Search by match name"
                 variant="outlined" />
         </Box>
     );

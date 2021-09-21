@@ -28,7 +28,6 @@ function Explore(props) {
                 setMatches(success.response);
                 setSearchMatches(success.response.matches.slice(0, 4));
                 setTotalSearchMatches(success.response.matches);
-                console.log(success.response.matches.length);
                 setSearchPageCount(Math.ceil(success.response.matches.length / 4));
                 props.profile.getAllTeams(0, 4).then((success) => {
                     setAllTeams(success.response);

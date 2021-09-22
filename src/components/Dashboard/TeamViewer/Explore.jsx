@@ -26,12 +26,10 @@ function Explore(props) {
             setOriginalTeam(success.response.team_id);
             props.profile.matches(team_id).then((success) => {
                 setMatches(success.response);
-                try {
+                if (success.response.matches !== undefined) {
                     setSearchMatches(success.response.matches.slice(0, 4));
                     setTotalSearchMatches(success.response.matches);
                     setSearchPageCount(Math.ceil(success.response.matches.length / 4));
-                } catch (error) {
-                    console.error(error);
                 }
                 props.profile.getAllTeams(0, 4).then((success) => {
                     setAllTeams(success.response);
@@ -49,7 +47,7 @@ function Explore(props) {
     * setTotalSearchMatches: same as setSearchMatches but no slicing, used for searchPageCount
     */
     useEffect(() => {
-        try {
+        if (matches.matches !== undefined) {
             const checkMatch = (match) => {
                 const lowerMatch = match.name.toLowerCase();
                 const upperMatch = match.name.toUpperCase();
@@ -60,8 +58,6 @@ function Explore(props) {
             };
             setSearchMatches(matches.matches.filter(checkMatch).slice(((searchPage - 1) * 4), searchPage * 4));
             setTotalSearchMatches(matches.matches.filter(checkMatch));
-        } catch (error) {
-            console.error(error);
         }
     }, [searchText]);
 

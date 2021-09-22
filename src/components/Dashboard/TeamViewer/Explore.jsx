@@ -26,9 +26,13 @@ function Explore(props) {
             setOriginalTeam(success.response.team_id);
             props.profile.matches(team_id).then((success) => {
                 setMatches(success.response);
-                setSearchMatches(success.response.matches.slice(0, 4));
-                setTotalSearchMatches(success.response.matches);
-                setSearchPageCount(Math.ceil(success.response.matches.length / 4));
+                try {
+                    setSearchMatches(success.response.matches.slice(0, 4));
+                    setTotalSearchMatches(success.response.matches);
+                    setSearchPageCount(Math.ceil(success.response.matches.length / 4));
+                } catch (error) {
+                    console.error(error);
+                }
                 props.profile.getAllTeams(0, 4).then((success) => {
                     setAllTeams(success.response);
                     setLoading(false);

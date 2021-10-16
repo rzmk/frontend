@@ -19,13 +19,12 @@ function MyTeam(props) {
     //const [isSubmitted, setSubmit] = useState(true);
 
     useEffect(() => {
-        getCurrentTeam();
         props.profile.getTeamUser().then((userResponse) => {
             if (userResponse.error && userResponse.error.message) {
                 // In this instance, we will assume the user just doesn't have a team enabled!
                 setLoading(false);
             } else {
-                const team_id = userResponse.response.team_id;
+                setTeamId(userResponse.response.team_id);
                 props.profile.getTeam(team_id).then(teamResponse => {
                     setTeam(teamResponse.response);
                     props.profile.Get()
@@ -39,19 +38,6 @@ function MyTeam(props) {
             }
         });
     }, []);
-
-
-
-    function getCurrentTeam() {
-        profile.getTeamUser().then((success) => {
-            setTeamId(success.response.team_id);
-            const id = success.response.team_id;
-            profile.getTeam(id).then((success) => {
-                setTeam(success.response);
-                setLoading(false);
-            });
-        });
-    }
 
     const handleInviteUserChange = e => {
         const { value } = e.target;
@@ -85,7 +71,7 @@ function MyTeam(props) {
             </Grid>
         );
     }
-    else if (user.hasateam) {
+    else if (user && user.hasateam) {
         return (
             <Grid container
                 direction="row"
@@ -101,13 +87,13 @@ function MyTeam(props) {
                                     xs>
                                     <Typography gutterBottom
                                         variant="h5">
-                                        {team.name}
+                                        {team && team.name}
                                     </Typography>
                                 </Grid>
                             </Grid>
                             <Typography color="textSecondary"
                                 variant="body2">
-                                {team.desc}
+                                {team && team.desc}
                             </Typography>
                         </div>
                         <Divider variant="middle" />
@@ -117,7 +103,7 @@ function MyTeam(props) {
                                 Skills
                             </Typography>
                             <div>
-                                {team.skills.length != 0
+                                {team && team.skills.length != 0
                                     ? team.skills.map((skill, index) => (
                                         <Chip label={skill}
                                             key={index} />
@@ -128,13 +114,13 @@ function MyTeam(props) {
                         <Divider variant="middle" />
 
                         <div style={{ marginTop: "0.5em", marginBottom: "0.5em" }}>
-                            {console.log(team.prizes)}
+                            {console.log(team && team.prizes)}
                             <Typography gutterBottom
                                 variant="body1">
                                 Prizes
                             </Typography>
                             <div>
-                                {team.prizes.length != 0 
+                                {team && team.prizes.length != 0 
                                     ? team.prizes.map((prize, index) => (
                                         <Chip label={prize}
                                             key={index} />
@@ -153,7 +139,7 @@ function MyTeam(props) {
                     {/* Iterating through members  */}
                     <List style={{ width: "100%", maxWidth: 360 }}>
 
-                        {team.members
+                        {team && team.members
                             ? team.members.map((member, index) => (
                                 <UserItem member={member}
                                     key={index} />
